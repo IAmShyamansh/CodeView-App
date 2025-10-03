@@ -59,11 +59,11 @@
 
         /* Styles for the code editor */
         #code-editor {
-            position: absolute;
+            position: fixed; /* Changed from absolute to fixed for better mobile behavior */
             top: 0;
             right: 0;
             height: 100vh;
-            width: 40vw; /* Adjust width as needed */
+            width: 40vw; /* Desktop width */
             z-index: 30;
             background-color: #f0f0f0;
             transform: translateX(100%);
@@ -78,25 +78,23 @@
         /* Responsive adjustments for smaller screens */
         @media (max-width: 768px) {
             #code-editor {
-                width: 80vw;
+                width: 90vw; /* Increased width for better use of mobile screen */
+                height: 100%;
             }
             #nav-bar {
                 width: 50px;
-            }
-            #nav-toggle-btn {
-                top: 0.5rem;
-                left: 0.25rem;
             }
         }
         
         #nav-toggle-btn {
             position: fixed;
             top: 1rem;
-            left: 0.5rem; /* Adjusted to be slightly to the left */
+            left: 0.5rem; 
             z-index: 40;
         }
 
-        #minimize-editor-btn {
+        /* Restore button is now the minimized editor icon */
+        #restore-editor-btn {
             position: fixed;
             bottom: 1rem;
             right: 1rem;
@@ -144,10 +142,20 @@
             }
         }
         
+        /* CodeMirror specific styling for resizing */
         .CodeMirror {
             height: 100%;
             border-radius: 0.75rem;
             border: 2px solid #e5e7eb;
+            /* Allow resizing only on desktop, horizontal resize is tricky on mobile */
+            resize: horizontal; 
+            overflow: auto;
+        }
+        /* Disable resizing entirely on small screens */
+        @media (max-width: 768px) {
+            .CodeMirror {
+                resize: none;
+            }
         }
 
         /* Loading Spinner */
@@ -184,8 +192,8 @@
         #toast.visible {
             opacity: 1;
         }
+
     </style>
-    <link rel="manifest" href="manifest.json">
 </head>
 <body class="flex items-center justify-center min-h-screen bg-gray-100">
 
@@ -341,6 +349,8 @@
         let hideNavTimer;
         let codeMirrorInstance;
         let debounceTimeout;
+        const isMobile = window.matchMedia('(max-width: 768px)').matches;
+
 
         // Function to show a toast notification
         function showToast(message) {
@@ -413,33 +423,20 @@
             }
         }
 
-        // Button event listeners
-        navToggleButton.addEventListener('mouseenter', () => {
-            clearTimeout(hideNavTimer);
-            navBar.classList.add('visible-nav');
-        });
+        // --- Navigation Toggle Logic ---
         
-        navToggleButton.addEventListener('mouseleave', () => {
-            hideNavTimer = setTimeout(() => {
-                navBar.classList.remove('visible-nav');
-            }, 500);
-        });
-        
-        navBar.addEventListener('mouseenter', () => {
-            clearTimeout(hideNavTimer);
-        });
-        
-        navBar.addEventListener('mouseleave', () => {
-             hideNavTimer = setTimeout(() => {
-                navBar.classList.remove('visible-nav');
-            }, 500);
-        });
-        
-        // New click listener on the hamburger button to override hover behavior
-        navToggleButton.addEventListener('click', () => {
+        // Function to handle nav show/hide (used for click on all devices)
+        function toggleNav() {
             navBar.classList.toggle('visible-nav');
-        });
+        }
 
+        // Handle hover only on non-mobile devices (REMOVED THIS LOGIC TO FIX MOBILE BUG)
+        // Click listener on the hamburger button (primary action for mobile)
+        navToggleButton.addEventListener('click', toggleNav);
+
+
+        // --- Other Button Event Listeners ---
+        
         homeBtn.addEventListener('click', () => {
             // Fade out preview screen
             previewScreen.classList.remove('visible');
@@ -540,5 +537,3 @@
     </script>
 </body>
 </html>
-
-
